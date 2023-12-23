@@ -2,6 +2,7 @@
 #include <libs.h>
 #include <morphman.h>
 #include <presetmanager.h>
+#undef GetObject
 namespace Event
 {
 	// this fires when an object holding a script (i.e. NPCs) loads their scripts. We use this for body application triggers.
@@ -66,7 +67,7 @@ namespace Event
 				auto dobj = RE::BGSDefaultObjectManager::GetSingleton();
 				auto keywordNPC = dobj->GetObject<RE::BGSKeyword>(RE::DEFAULT_OBJECT::kKeywordNPC);
 
-				if (actor->HasKeyword(keywordNPC) && (actor->GetActorBase()->GetSex() == 1)) {
+				if (keywordNPC && actor->HasKeyword(keywordNPC) && (actor->GetActorBase()->GetSex() == 1)) {
 					//logger::info("Processing equipment for {} ", actor->GetName());
 
 					bool removingBody = false;

@@ -1,10 +1,10 @@
 cmake_minimum_required(VERSION 3.22)
 set(NAME "autoBodyAE")
-set(VERSION 1.5.2)
+set(VERSION 1.5.3)
 set(VR_VERSION 1)
 option(COPY_OUTPUT "copy the output of build operations to the game directory" ON)
 option(BUILD_SKYRIMSSE "Build for Skyrim SSE" OFF) # currently untested
-option(BUILD_SKYRIMVR "Build for Skyrim VR" OFF)
+option(BUILD_SKYRIMVR "Build for Skyrim VR/NG" OFF)
 
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
@@ -15,13 +15,14 @@ macro(set_from_environment VARIABLE)
 endmacro()
 
 macro(find_commonlib_path)
-	if (CommonLibName AND NOT ${CommonLibName} STREQUAL "")
+	if(CommonLibName AND NOT ${CommonLibName} STREQUAL "")
 		# Check extern
 		find_path(CommonLibPath
-		include/REL/Relocation.h
-		PATHS external/${CommonLibName})
-		if (${CommonLibPath} STREQUAL "CommonLibPath-NOTFOUND")
-			#Check path
+			include/REL/Relocation.h
+			PATHS external/${CommonLibName})
+
+		if(${CommonLibPath} STREQUAL "CommonLibPath-NOTFOUND")
+			# Check path
 			set_from_environment(${CommonLibName}Path)
 			set(CommonLibPath ${${CommonLibName}Path})
 		endif()
@@ -31,7 +32,7 @@ endmacro()
 if(BUILD_SKYRIMVR)
 	add_compile_definitions(SKYRIMVR)
 	add_compile_definitions(_CRT_SECURE_NO_WARNINGS)
-	set(CommonLibName "CommonLibVR")
+	set(CommonLibName "CommonLibSSE")
 	set_from_environment(SkyrimVRPath)
 	set(SkyrimPath ${SkyrimVRPath})
 	set(SkyrimVersion "Skyrim VR")
@@ -51,6 +52,7 @@ else()
 	set(SkyrimVersion "Skyrim AE")
 	set(VERSION ${VERSION}.0)
 endif()
+
 find_commonlib_path()
 message(
 	STATUS
@@ -66,7 +68,6 @@ project(
 if("${PROJECT_SOURCE_DIR}" STREQUAL "${PROJECT_BINARY_DIR}")
 	message(FATAL_ERROR "in-source builds are not allowed")
 endif()
-
 
 list(APPEND CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake")
 

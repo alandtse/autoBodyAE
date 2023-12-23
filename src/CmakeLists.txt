@@ -2,13 +2,20 @@ set(ROOT_DIR "${CMAKE_CURRENT_SOURCE_DIR}/..")
 
 set(SOURCE_DIR "${ROOT_DIR}/src")
 set(SOURCE_FILES
+	"${SOURCE_DIR}/eventhandling.h"
+	"${SOURCE_DIR}/inverts.h"
+	"${SOURCE_DIR}/libs.h"
+	"${SOURCE_DIR}/maffs.h"
+	"${SOURCE_DIR}/morphman.h"
+	"${SOURCE_DIR}/papyrusfunc.h"
+	"${SOURCE_DIR}/presetmanager.h"
+	"${SOURCE_DIR}/SKEE.h"
 	"${SOURCE_DIR}/main.cpp"
 	"${SOURCE_DIR}/maffs.cpp"
 	"${SOURCE_DIR}/morphman.cpp"
 	"${SOURCE_DIR}/papyrusfunc.cpp"
 	"${SOURCE_DIR}/presetmanager.cpp"
 )
-
 
 source_group(TREE "${ROOT_DIR}" FILES ${SOURCE_FILES})
 
@@ -32,45 +39,44 @@ add_library("${PROJECT_NAME}" SHARED ${SOURCE_FILES})
 target_compile_features(
 	"${PROJECT_NAME}"
 	PRIVATE
-		cxx_std_20
+	cxx_std_20
 )
 
 if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "MSVC")
 	target_compile_options(
 		"${PROJECT_NAME}"
 		PRIVATE
-			"/sdl"	# Enable Additional Security Checks
-			"/utf-8"	# Set Source and Executable character sets to UTF-8
-			"/Zi"	# Debug Information Format
+		"/sdl" # Enable Additional Security Checks
+		"/utf-8" # Set Source and Executable character sets to UTF-8
+		"/Zi" # Debug Information Format
 
-			"/permissive-"	# Standards conformance
-			"/Zc:preprocessor"	# Enable preprocessor conformance mode
+		"/permissive-" # Standards conformance
+		"/Zc:preprocessor" # Enable preprocessor conformance mode
 
-			"/wd4200" # nonstandard extension used : zero-sized array in struct/union
+		"/wd4200" # nonstandard extension used : zero-sized array in struct/union
 
-			"$<$<CONFIG:DEBUG>:>"
-			"$<$<CONFIG:RELEASE>:/Zc:inline;/JMC-;/Ob3>"
+		"$<$<CONFIG:DEBUG>:>"
+		"$<$<CONFIG:RELEASE>:/Zc:inline;/JMC-;/Ob3>"
 	)
 
 	target_link_options(
 		"${PROJECT_NAME}"
 		PRIVATE
-			"$<$<CONFIG:DEBUG>:/INCREMENTAL;/OPT:NOREF;/OPT:NOICF>"
-			"$<$<CONFIG:RELEASE>:/INCREMENTAL:NO;/OPT:REF;/OPT:ICF;/DEBUG:FULL>"
+		"$<$<CONFIG:DEBUG>:/INCREMENTAL;/OPT:NOREF;/OPT:NOICF>"
+		"$<$<CONFIG:RELEASE>:/INCREMENTAL:NO;/OPT:REF;/OPT:ICF;/DEBUG:FULL>"
 	)
 endif()
 
 target_include_directories(
 	"${PROJECT_NAME}"
 	PRIVATE
-		"${CMAKE_CURRENT_BINARY_DIR}/src"
-		"${SOURCE_DIR}"
+	"${CMAKE_CURRENT_BINARY_DIR}/src"
+	"${SOURCE_DIR}"
 )
 
-
-if (DEFINED CommonLibPath AND NOT ${CommonLibPath} STREQUAL "" AND IS_DIRECTORY ${CommonLibPath})
+if(DEFINED CommonLibPath AND NOT ${CommonLibPath} STREQUAL "" AND IS_DIRECTORY ${CommonLibPath})
 	add_subdirectory(${CommonLibPath} ${CommonLibName})
-else ()
+else()
 	message(
 		FATAL_ERROR
 		"Variable ${CommonLibName}Path is not set."
@@ -80,28 +86,98 @@ endif()
 target_link_libraries(
 	"${PROJECT_NAME}"
 	PRIVATE
-		${CommonLibName}::${CommonLibName}
+	${CommonLibName}::${CommonLibName}
 )
 
 target_precompile_headers(
 	"${PROJECT_NAME}"
 	PRIVATE
-		"${SOURCE_DIR}/libs.h"
+	"${SOURCE_DIR}/libs.h"
 )
 
-
-if("${COPY_OUTPUT}")
-	if (DEFINED SkyrimPath)
-	add_custom_command(
-		TARGET ${PROJECT_NAME}
-		POST_BUILD
-		COMMAND ${CMAKE_COMMAND} -E copy_if_different $<TARGET_FILE:${PROJECT_NAME}> ${SkyrimPath}/Data/SKSE/Plugins/
-		COMMAND ${CMAKE_COMMAND} -E copy_if_different $<TARGET_PDB_FILE:${PROJECT_NAME}> ${SkyrimPath}/Data/SKSE/Plugins/
-	)
-	else ()
-	message(
-		WARNING
-		"Variable ${SkyrimPath} is not defined. Skipping post-build copy command."
-	)
-	endif ()
+# #######################################################################################################################
+# # Automatic plugin deployment
+# #######################################################################################################################
+if(CMAKE_BUILD_TYPE STREQUAL "Debug")
+	set(BUILD_NAME "Debug")
+else()
+	set(BUILD_NAME "Release")
 endif()
+
+file(GLOB_RECURSE CONFIG_FILES "${CMAKE_CURRENT_SOURCE_DIR}/contrib/Distribution/Config/*.yaml")
+file(GLOB_RECURSE OUTPUT_DLLS "${CMAKE_CURRENT_SOURCE_DIR}/contrib/Distribution/**/*.dll")
+file(GLOB_RECURSE OUTPUT_PDBS "${CMAKE_CURRENT_SOURCE_DIR}/contrib/Distribution/**/*.pdb")
+file(GLOB_RECURSE OUTPUT_SCRIPTS "${CMAKE_CURRENT_SOURCE_DIR}/../Papyrus Scripts/*.pex")
+file(GLOB_RECURSE OUTPUT_SCRIPTS_SOURCE "${CMAKE_CURRENT_SOURCE_DIR}/../Papyrus Scripts/**/*.psc")
+set(DISTRIB "${CMAKE_CURRENT_SOURCE_DIR}/../distrib/")
+
+set_property(TARGET ${PROJECT_NAME}
+	APPEND PROPERTY ADDITIONAL_CLEAN_FILES "${OUTPUT_DLLS}")
+set_property(TARGET ${PROJECT_NAME}
+	APPEND PROPERTY ADDITIONAL_CLEAN_FILES "${OUTPUT_PDBS}")
+set_property(TARGET ${PROJECT_NAME}
+	APPEND PROPERTY ADDITIONAL_CLEAN_FILES "${OUTPUT_SCRIPTS}")
+
+# Automatic deployment to Mod Organizer 2 mod directory.
+foreach(DEPLOY_TARGET $ENV{SkyrimPluginTargets})
+	message("Adding deployment target ${DEPLOY_TARGET}.")
+	add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
+		COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:${PROJECT_NAME}> "${DEPLOY_TARGET}/SKSE/Plugins/")
+
+	if(${CMAKE_BUILD_TYPE} STREQUAL Debug OR ${CMAKE_BUILD_TYPE} STREQUAL RelWithDebInfo OR ${CMAKE_BUILD_TYPE} STREQUAL Release)
+		add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
+			COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_PDB_FILE:${PROJECT_NAME}> "${DEPLOY_TARGET}/SKSE/Plugins/")
+	endif()
+endforeach()
+
+set(ZIP_DIR "${CMAKE_CURRENT_BINARY_DIR}/zip")
+add_custom_target(build-time-make-directory ALL
+	COMMAND ${CMAKE_COMMAND} -E make_directory "${ZIP_DIR}"
+	"${ZIP_DIR}/Scripts/Source/"
+	"${ZIP_DIR}/SKSE/Plugins/"
+	"${ZIP_DIR}/autoBody/Config/"
+	"${ZIP_DIR}/autoBody/Presets/"
+	"${ZIP_DIR}/CalienteTools/BodySlide/SliderPresets"
+)
+
+message("Will copy mod into ${ZIP_DIR}.")
+add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
+	COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:${PROJECT_NAME}> "${ZIP_DIR}/SKSE/Plugins/"
+)
+
+# if(DISTRIB)
+# message("Will copy root ${DISTRIB} into ${ZIP_DIR}.")
+# add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
+# COMMAND ${CMAKE_COMMAND} -E copy "${DISTRIB}" "${ZIP_DIR}")
+# add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
+# COMMAND ${CMAKE_COMMAND} -E copy "${DISTRIB}autoBody/Config/" "${ZIP_DIR}/autoBody/Config")
+# add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
+# COMMAND ${CMAKE_COMMAND} -E copy "${DISTRIB}autoBody/Presets" "${ZIP_DIR}/autoBody/Presets")
+# add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
+# COMMAND ${CMAKE_COMMAND} -E copy "${DISTRIB}CalienteTools/BodySlide/SliderPresets" "${ZIP_DIR}/CalienteTools/BodySlide/SliderPresets")
+# endif()
+
+# if(OUTPUT_SCRIPTS)
+# message("Will copy default Papyrus Scripts ${OUTPUT_SCRIPTS} into ${ZIP_DIR}.")
+# add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
+# COMMAND ${CMAKE_COMMAND} -E copy ${OUTPUT_SCRIPTS} "${ZIP_DIR}/Scripts/")
+# endif()
+
+# if(OUTPUT_SCRIPTS_SOURCE)
+# message("Will copy default Papyrus Scripts Source ${OUTPUT_SCRIPTS} into ${ZIP_DIR}.")
+# add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
+# COMMAND ${CMAKE_COMMAND} -E copy ${OUTPUT_SCRIPTS_SOURCE} "${ZIP_DIR}/Scripts/Source/")
+# endif()
+if(${CMAKE_BUILD_TYPE} STREQUAL Debug OR ${CMAKE_BUILD_TYPE} STREQUAL RelWithDebInfo OR ${CMAKE_BUILD_TYPE} STREQUAL Release)
+	add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
+		COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_PDB_FILE:${PROJECT_NAME}> "${ZIP_DIR}/SKSE/Plugins/")
+endif()
+
+set(TARGET_ZIP "${PROJECT_NAME}_${PROJECT_VERSION}.7z")
+message("Will zip ${ZIP_DIR} to ${CMAKE_CURRENT_BINARY_DIR}/${TARGET_ZIP}.")
+ADD_CUSTOM_COMMAND(
+	TARGET ${PROJECT_NAME}
+	POST_BUILD
+	COMMAND ${CMAKE_COMMAND} -E tar cf ${CMAKE_CURRENT_BINARY_DIR}/${TARGET_ZIP} --format=7zip -- .
+	WORKING_DIRECTORY ${ZIP_DIR}
+)

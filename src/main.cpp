@@ -1,5 +1,6 @@
 #pragma once
 
+#include <SKSE/Version.h>
 #include <SimpleIni.h>
 #include <eventhandling.h>
 #include <maffs.h>
@@ -103,7 +104,6 @@ namespace
 		spdlog::set_pattern("[%^%l%$] %v"s);
 	}
 }  // namespace
-#if defined(SKYRIMVR) || defined(SKYRIMSSE)
 extern "C" DLLEXPORT bool SKSEAPI SKSEPlugin_Query(const SKSE::QueryInterface* a_skse, SKSE::PluginInfo* a_info)
 {
 	a_info->infoVersion = SKSE::PluginInfo::kVersion;
@@ -116,20 +116,13 @@ extern "C" DLLEXPORT bool SKSEAPI SKSEPlugin_Query(const SKSE::QueryInterface* a
 	}
 
 	const auto ver = a_skse->RuntimeVersion();
-	if (ver <
-#	ifndef SKYRIMVR
-		SKSE::RUNTIME_1_5_39
-#	else
-		SKSE::RUNTIME_VR_1_4_15
-#	endif
-	) {
+	if (ver < SKSE::RUNTIME_SSE_1_5_39 && !REL::Module::IsVR() || ver < SKSE::RUNTIME_VR_1_4_15 && REL::Module::IsVR()) {
 		logger::critical(FMT_STRING("Unsupported runtime version {}"sv), ver.string());
 		return false;
 	}
 
 	return true;
 }
-#else
 extern "C" DLLEXPORT constinit auto SKSEPlugin_Version = []() {
 	SKSE::PluginVersionData v;
 
@@ -137,11 +130,11 @@ extern "C" DLLEXPORT constinit auto SKSEPlugin_Version = []() {
 	v.PluginName(Plugin::NAME);
 
 	v.UsesAddressLibrary(true);
-	v.CompatibleVersions({ SKSE::RUNTIME_LATEST, SKSE::RUNTIME_1_6_640 });
+	v.UsesStructsPost629(true);
+	v.CompatibleVersions({ SKSE::RUNTIME_SSE_LATEST });
 
 	return v;
 }();
-#endif
 
 //basically int main()
 extern "C" DLLEXPORT bool SKSEAPI SKSEPlugin_Load(const SKSE::LoadInterface* a_skse)
