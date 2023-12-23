@@ -1,0 +1,53 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<SliderPresets>
+    <Preset name="RefitSliders" set="CBBE 3BBB Body Amazing">
+        <Group name="3BA"/>
+        <Group name="RefitSliders"/>
+        <SetSlider name="AppleCheeks" size="big" value="-5"/>
+        <SetSlider name="AppleCheeks" size="small" value="-5"/>
+        <SetSlider name="AreolaSize" size="big" value="-30"/>
+        <SetSlider name="AreolaSize" size="small" value="-30"/>
+        <SetSlider name="BreastCleavage" size="big" value="100"/>
+        <SetSlider name="BreastCleavage" size="small" value="100"/>
+        <SetSlider name="BreastGravity2" size="big" value="-5"/>
+        <SetSlider name="BreastGravity2" size="small" value="-10"/>
+        <SetSlider name="BreastHeight" size="big" value="15"/>
+        <SetSlider name="BreastHeight" size="small" value="15"/>
+        <SetSlider name="BreastSideShape" size="big" value="0"/>
+        <SetSlider name="BreastSideShape" size="small" value="0"/>
+        <SetSlider name="BreastTopSlope" size="big" value="-35"/>
+        <SetSlider name="BreastTopSlope" size="small" value="-20"/>
+        <SetSlider name="BreastsTogether" size="big" value="35"/>
+        <SetSlider name="BreastsTogether" size="small" value="30"/>
+        <SetSlider name="BreastUnderDepth" size="big" value="0"/>
+        <SetSlider name="BreastUnderDepth" size="small" value="0"/>
+        <SetSlider name="Breasts" size="big" value="-5"/>
+        <SetSlider name="Breasts" size="small" value="-5"/>
+        <SetSlider name="Butt" size="big" value="-5"/>
+        <SetSlider name="Butt" size="small" value="-5"/>
+        <SetSlider name="ButtDimples" size="big" value="0"/>
+        <SetSlider name="ButtDimples" size="small" value="0"/>
+        <SetSlider name="ButtUnderFold" size="big" value="0"/>
+        <SetSlider name="ButtUnderFold" size="small" value="0"/>
+        <SetSlider name="Clavicle_v2" size="big" value="0"/>
+        <SetSlider name="Clavicle_v2" size="small" value="0"/>
+        <SetSlider name="HipCarved" size="big" value="0"/>
+        <SetSlider name="HipCarved" size="small" value="0"/>
+        <SetSlider name="NippleDip" size="big" value="0"/>
+        <SetSlider name="NippleDip" size="small" value="0"/>
+        <SetSlider name="NippleTip" size="big" value="0"/>
+        <SetSlider name="NippleTip" size="small" value="0"/>
+        <SetSlider name="NipplePuffy_v2" size="big" value="0"/>
+        <SetSlider name="NipplePuffy_v2" size="small" value="0"/>
+        <SetSlider name="NippleDistance" size="big" value="8"/>
+        <SetSlider name="NippleDistance" size="small" value="5"/>
+        <SetSlider name="NippleDown" size="big" value="-10"/>
+        <SetSlider name="NippleDown" size="small" value="0"/>
+        <SetSlider name="NavelEven" size="big" value="100"/>
+        <SetSlider name="NavelEven" size="small" value="100"/>
+        <SetSlider name="NipBGone" size="big" value="100"/>
+        <SetSlider name="NipBGone" size="small" value="100"/>
+        <SetSlider name="NipplePerkiness" size="big" value="0"/>
+        <SetSlider name="NipplePerkiness" size="small" value="0"/>
+    </Preset>
+</SliderPresets>
