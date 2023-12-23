@@ -137,7 +137,7 @@ extern "C" DLLEXPORT constinit auto SKSEPlugin_Version = []() {
 	v.PluginName(Plugin::NAME);
 
 	v.UsesAddressLibrary(true);
-	v.CompatibleVersions({ SKSE::RUNTIME_LATEST, SKSE::RUNTIME_1_6_323 });
+	v.CompatibleVersions({ SKSE::RUNTIME_LATEST, SKSE::RUNTIME_1_6_640 });
 
 	return v;
 }();
@@ -148,7 +148,7 @@ extern "C" DLLEXPORT bool SKSEAPI SKSEPlugin_Load(const SKSE::LoadInterface* a_s
 {
 	InitializeLog();
 
-	logger::info("{} v{}"sv, Plugin::NAME, Plugin::VERSION.string());
+	logger::info("{} v{}", Plugin::NAME, Plugin::VERSION.string());
 	SKSE::Init(a_skse);
 	logger::info("SKSE initialized.");
 	auto message = SKSE::GetMessagingInterface();
